@@ -36,7 +36,7 @@ var PRODUCTS = [
   { name: 'Худи Archive',         category: 'Худи и свитшоты', size: 'XL',       price: 1900, photo: '', sold: false },
   { name: 'Свитшот Vintage',      category: 'Худи и свитшоты', size: 'M',        price: 1500, photo: '', sold: false },
   { name: 'Флисовая кофта',       category: 'Худи и свитшоты', size: 'L',        price: 1700, photo: '', sold: false },
-  { name: 'Футболка Tour 98',     category: 'Футболки',        size: 'L',        price: 1200, photo: '', sold: false },
+  { name: 'Maison Margiela Caution',     category: 'Футболки',        size: ['S', 'M', 'L', 'XL'],        price: 7500, photo: 'photos/Maison-Margiela-Caution.png', sold: false },
   { name: 'Футболка Sport',       category: 'Футболки',        size: 'M',        price: 900,  photo: '', sold: false },
   { name: 'Лонгслив Retro',       category: 'Футболки',        size: 'S',        price: 1100, photo: '', sold: false },
   { name: 'Джинсы Straight',      category: 'Брюки и джинсы',  size: '32',       price: 2300, photo: '', sold: false },
