@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DEGREES° 12 — Archive Fashion</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- Стили сайта (цвета и размеры) -->
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!-- ШАПКА: логотип и меню -->
+<header>
+  <a class="brand" href="#home"><img src="logo.jpg" alt="Логотип Degrees 12">DEGREES° 12</a>
+  <nav aria-label="Основное меню">
+    <a href="#home">Главная</a><a href="#catalog">Каталог</a><a href="#categories">Категории</a><a href="#about">О нас</a>
+  </nav>
+</header>
+<!-- Все страницы лежат в одном файле, показывается одна (см. script.js) -->
+<main>
+<!-- ГЛАВНАЯ: заголовок, категории, новинки. Текст под заголовком меняйте здесь -->
+<section class="view" id="home">
+  <div class="hero">
+    <h1>Degrees° <span>12</span></h1>
+    <p><b>Archive Fashion.</b> Вещи с историей: винтажная и архивная одежда, отобранная вручную.</p>
+    <a class="btn" href="#catalog">Смотреть каталог</a>
+  </div>
+  <div class="wrap">
+    <h2>Категории</h2><div class="grid cats" id="homeCats"></div>
+    <h2 style="margin-top:56px">Новые поступления</h2><div class="grid" id="homeNew"></div>
+  </div>
+</section>
+<!-- КАТАЛОГ: фильтры и товары создаются автоматически из products.js -->
+<section class="view" id="catalog"><div class="wrap">
+  <h2>Каталог</h2><div class="toolbar">
+    <div class="chips" id="chips" role="group" aria-label="Фильтр по категориям"></div>
+    <!-- Сортировка по цене: значения читает script.js -->
+    <label class="sort">Сортировка
+      <select id="sort">
+        <option value="default">По умолчанию</option>
+        <option value="desc">Сначала дорогие</option>
+        <option value="asc">Сначала дешёвые</option>
+      </select>
+    </label>
+  </div><div class="grid" id="list"></div>
+</div></section>
+<!-- КАТЕГОРИИ: плитки создаются из products.js -->
+<section class="view" id="categories"><div class="wrap">
+  <h2>Категории</h2><div class="grid cats" id="allCats"></div>
+</div></section>
+<!-- О НАС: меняйте текст и контакт (в списке справа) прямо здесь -->
+<section class="view" id="about"><div class="wrap">
+  <h2>О нас</h2>
+  <div class="about">
+    <div>
+      <p>Degrees° 12 — магазин архивной одежды. Мы собираем вещи прошлых коллекций и редкие винтажные находки, которые сегодня носятся так же хорошо, как и раньше.</p>
+      <p>Каждая вещь проходит проверку: состояние, швы, фурнитура, подлинность. В карточке мы честно указываем размер и износ.</p>
+      <a class="btn" href="#catalog">Перейти в каталог</a>
+    </div>
+    <div class="facts"><h3>Как мы работаем</h3>
+      <ul><li>Только отобранные вещи, без масс-маркета</li><li>Одна вещь — один размер, повторов нет</li><li>Честное описание состояния</li><li>Связь: @degrees12 (замените на свой контакт)</li></ul>
+    </div>
+  </div>
+</div></section>
+</main>
+<!-- ПОДВАЛ -->
+<footer>© DEGREES° 12 — Archive Fashion</footer>
+<!-- Supabase (база данных для админки) и настройки подключения -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<!-- products.js — ваши товары, script.js — логика. Порядок важен -->
+<script src="products.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

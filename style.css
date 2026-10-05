@@ -1,0 +1,437 @@
+/* ===== ЦВЕТА: меняйте здесь ===== */
+/* espresso — тёмный фон, mocha — акцент, latte — светлый акцент, oat/foam — светлые фоны */
+:root {
+    --espresso: #24160e;
+    --mocha: #4a3223;
+    --latte: #b8946a;
+    --oat: #e9dcc6;
+    --foam: #f6efe3;
+    --bg: var(--foam);
+    --ink: var(--espresso);
+    --card: #fff9ef;
+    --line: #d9c8aa;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px)
+}
+
+/* Тёмная тема (включается автоматически, если у посетителя тёмная тема) */
+@media (prefers-color-scheme:dark) {
+    :root:not([data-theme="light"]) {
+        --bg: #1b110b;
+        --ink: #f1e6d2;
+        --card: #2a1b12;
+        --line: #4a3223
+    }
+}
+
+:root[data-theme="dark"] {
+    --bg: #1b110b;
+    --ink: #f1e6d2;
+    --card: #2a1b12;
+    --line: #4a3223
+}
+
+/* ===== ОБЩИЕ СТИЛИ ===== */
+html {
+    scroll-padding-top: env(safe-area-inset-top, 0px)
+}
+
+* {
+    box-sizing: border-box
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: Archivo, system-ui, sans-serif;
+    line-height: 1.55
+}
+
+h1,
+h2,
+h3 {
+    font-family: Anton, Impact, 'Arial Narrow', sans-serif;
+    font-weight: 400;
+    text-transform: uppercase;
+    line-height: .95;
+    margin: 0;
+    letter-spacing: .01em
+}
+
+a {
+    color: inherit
+}
+
+:focus-visible {
+    outline: 3px solid var(--latte);
+    outline-offset: 2px
+}
+
+/* ===== ШАПКА И МЕНЮ ===== */
+header {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 5;
+    background: var(--espresso);
+    color: var(--foam);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 10px 24px;
+    flex-wrap: wrap
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    font-family: Anton, Impact, sans-serif;
+    font-size: 20px;
+    letter-spacing: .04em
+}
+
+.brand img {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    display: block
+}
+
+nav {
+    margin-left: auto;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap
+}
+
+nav a {
+    text-decoration: none;
+    padding: 8px 14px;
+    border-radius: 99px;
+    font-weight: 500
+}
+
+nav a:hover {
+    background: var(--mocha)
+}
+
+nav a[aria-current=page] {
+    background: var(--latte);
+    color: var(--espresso)
+}
+
+/* ===== РАЗДЕЛЫ (показывается только активный) ===== */
+main {
+    min-height: 70vh
+}
+
+.view {
+    display: none
+}
+
+.view.on {
+    display: block
+}
+
+/* ===== ГЛАВНАЯ: большой заголовок ===== */
+.hero {
+    background: var(--espresso);
+    color: var(--foam);
+    padding: 64px 24px 56px;
+    overflow: hidden
+}
+
+.hero h1 {
+    font-size: clamp(64px, 17vw, 220px);
+    max-width: 1200px;
+    margin: 0 auto
+}
+
+.hero h1 span {
+    display: block;
+    color: var(--latte)
+}
+
+.hero p {
+    max-width: 1200px;
+    margin: 24px auto 0;
+    font-size: 18px
+}
+
+.hero p b {
+    font-weight: 600
+}
+
+/* ===== ОБЩИЕ БЛОКИ И КНОПКИ ===== */
+.wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 48px 24px
+}
+
+.btn {
+    display: inline-block;
+    margin-top: 24px;
+    margin-left: 190px;
+    padding: 14px 28px;
+    background: var(--latte);
+    color: var(--espresso);
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 99px;
+    border: 0;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 600
+}
+
+.btn:hover {
+    background: var(--oat)
+}
+
+h2 {
+    font-size: clamp(36px, 6vw, 64px);
+    margin-bottom: 24px
+}
+
+/* ===== СЕТКИ: товары и категории ===== */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 20px
+}
+
+.cats {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr))
+}
+
+.cat {
+    aspect-ratio: 4/3;
+    border-radius: 14px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-decoration: none;
+    border: 0;
+    cursor: pointer;
+    text-align: left;
+    font: inherit
+}
+
+.cat strong {
+    font-family: Anton, Impact, sans-serif;
+    font-weight: 400;
+    font-size: 34px;
+    text-transform: uppercase;
+    line-height: 1
+}
+
+.cat:hover {
+    transform: translateY(-3px)
+}
+
+.cat {
+    transition: transform .15s
+}
+
+/* ===== КАРТОЧКА ТОВАРА ===== */
+.card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column
+}
+
+.ph {
+    aspect-ratio: 3/4;
+    display: flex;
+    align-items: flex-end;
+    padding: 14px;
+    font-family: Anton, Impact, sans-serif;
+    font-size: 26px;
+    text-transform: uppercase;
+    line-height: 1;
+    opacity: .95
+}
+
+.info {
+    padding: 14px 16px 18px
+}
+
+.info h3 {
+    font-size: 22px;
+    margin-bottom: 6px
+}
+
+.meta {
+    font-size: 14px;
+    opacity: .75
+}
+
+.price {
+    font-weight: 600;
+    margin-top: 8px
+}
+
+/* ===== ФИЛЬТРЫ КАТАЛОГА ===== */
+.chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 28px
+}
+
+.chip {
+    padding: 8px 16px;
+    border-radius: 99px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer
+}
+
+.chip[aria-pressed=true] {
+    background: var(--mocha);
+    color: var(--foam);
+    border-color: var(--mocha)
+}
+
+/* ===== СТРАНИЦА «О НАС» ===== */
+.about {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: start
+}
+
+.about p {
+    max-width: 60ch;
+    font-size: 18px
+}
+
+.facts {
+    background: var(--mocha);
+    color: var(--foam);
+    padding: 28px;
+    border-radius: 14px
+}
+
+.facts h3 {
+    font-size: 28px;
+    margin-bottom: 14px;
+    color: var(--latte)
+}
+
+.facts ul {
+    margin: 0;
+    padding-left: 18px
+}
+
+.facts li {
+    margin-bottom: 8px
+}
+
+/* ===== ПОДВАЛ ===== */
+footer {
+    background: var(--espresso);
+    color: var(--oat);
+    padding: 32px 24px;
+    text-align: center;
+    font-size: 14px
+}
+
+/* ===== ТЕЛЕФОНЫ ===== */
+@media(max-width:720px) {
+    .about {
+        grid-template-columns: 1fr
+    }
+
+    header {
+        padding: 10px 16px
+    }
+
+    nav {
+        margin-left: 0;
+        width: 100%
+    }
+}
+
+@media(prefers-reduced-motion:reduce) {
+    * {
+        transition: none !important
+    }
+}
+
+/* ===== ФОТО ТОВАРА И ПОМЕТКА «ПРОДАНО» ===== */
+.ph {
+    position: relative;
+    overflow: hidden
+}
+
+.ph img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover
+}
+
+.card {
+    position: relative
+}
+
+.card.sold {
+    opacity: .55;
+    filter: grayscale(.6)
+}
+
+.badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 2;
+    background: var(--espresso);
+    color: var(--foam);
+    padding: 4px 12px;
+    border-radius: 99px;
+    font-size: 13px;
+    font-weight: 600
+}
+
+/* ===== ПАНЕЛЬ КАТАЛОГА: фильтры слева, сортировка справа ===== */
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 28px
+}
+
+.toolbar .chips {
+    margin-bottom: 0
+}
+
+.sort {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500
+}
+
+.sort select {
+    padding: 9px 14px;
+    border-radius: 99px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: inherit;
+    font: inherit;
+    cursor: pointer
+}
