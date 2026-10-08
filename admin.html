@@ -110,7 +110,7 @@ async function check() {
 }
 $('go').onclick = async function () {
   var r = await sb.auth.signInWithPassword({ email: toEmail($('em').value), password: $('pw').value });
-  if (r.error) say('Ошибка: ' + r.error.message); else check();
+  if (r.error) say('Неверная почта или пароль'); else check();
 };
 $('out').onclick = async function () { await sb.auth.signOut(); check(); };
 

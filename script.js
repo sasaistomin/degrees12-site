@@ -26,10 +26,10 @@ function card(p) {
     ? '<div class="ph"><img src="' + p.photo + '" alt="' + p.name + '" loading="lazy"></div>'
     : '<div class="ph" style="background:' + c.color + ';color:' + c.text + '">' + p.name + '</div>';
   // Пометка «Продано», если sold: true
-  var badge = p.sold ? '<span class="badge">Продано</span>' : '';
+  var badge = p.sold ? '<span class="badge">' + t('sold') + '</span>' : '';
   return '<article class="card' + (p.sold ? ' sold' : '') + '">' + badge + pic +
     '<div class="info"><h3>' + p.name + '</h3>' +
-    '<div class="meta">' + p.category + ' · размер ' + p.size + '</div>' +
+    '<div class="meta">' + cn(p.category) + ' · ' + t('size') + ' ' + p.size + '</div>' +
     '<div class="price">' + p.price.toLocaleString('ru-RU') + ' ' + CURRENCY + '</div></div></article>';
 }
 
@@ -37,21 +37,21 @@ function card(p) {
 function catTile(c) {
   var n = PRODUCTS.filter(function (p) { return p.category === c.name && !p.sold; }).length;
   return '<button class="cat" data-cat="' + c.name + '" style="background:' + c.color + ';color:' + c.text + '">' +
-    '<span>' + n + ' шт.</span><strong>' + c.name + '</strong></button>';
+    '<span>' + n + ' ' + t('pcs') + '</span><strong>' + cn(c.name) + '</strong></button>';
 }
 
 // Рисуем каталог: кнопки-фильтры + список товаров выбранной категории
 function renderList() {
   var names = ['Все'].concat(CATEGORIES.map(function (c) { return c.name; }));
   $('chips').innerHTML = names.map(function (n) {
-    return '<button class="chip" aria-pressed="' + (n === current) + '" data-chip="' + n + '">' + n + '</button>';
+    return '<button class="chip" aria-pressed="' + (n === current) + '" data-chip="' + n + '">' + (n === 'Все' ? t('all') : cn(n)) + '</button>';
   }).join('');
   // Берём товары нужной категории
   var items = PRODUCTS.filter(function (p) { return current === 'Все' || p.category === current; });
   // Сортируем по цене, если выбрано
   if (sortMode === 'asc')  items.sort(function (a, b) { return a.price - b.price; });
   if (sortMode === 'desc') items.sort(function (a, b) { return b.price - a.price; });
-  $('list').innerHTML = items.map(card).join('');
+  $('list').innerHTML = items.map(card).join('') || '<p>' + t('empty') + '</p>';
 }
 
 // Заполняем главную и страницу категорий
@@ -77,6 +77,12 @@ async function loadData() {
       return { name: p.name, category: p.category, size: (p.sizes || []).join(','), price: Number(p.price), photo: p.photo || '', sold: p.sold };
     });
   } catch (e) { console.error('Supabase:', e); }
+}
+
+// Перерисовка после смены языка (вызывается из i18n.js)
+function rerender() {
+  renderStatic();
+  if (($('catalog')).classList.contains('on')) renderList();
 }
 
 // Клики: по плитке категории (переход в каталог) и по кнопке-фильтру
@@ -106,4 +112,4 @@ function route() {
 }
 window.addEventListener('hashchange', route);
 // Старт: сначала данные, потом отрисовка
-loadData().then(function () { renderStatic(); route(); });
+loadData().then(function () { applyStatic(); renderStatic(); route(); });

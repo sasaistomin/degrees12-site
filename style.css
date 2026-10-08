@@ -435,3 +435,8 @@ footer {
     font: inherit;
     cursor: pointer
 }
+/* ===== ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКОВ (кнопки RU / UA / EN в шапке) ===== */
+.lang{display:flex;gap:4px}
+.lang button{background:transparent;border:1px solid var(--mocha);color:var(--foam);border-radius:99px;padding:6px 11px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.lang button:hover{background:var(--mocha)}
+.lang button[aria-pressed="true"]{background:var(--latte);color:var(--espresso);border-color:var(--latte)}
