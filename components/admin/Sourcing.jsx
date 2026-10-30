@@ -39,7 +39,7 @@ export default function Sourcing({ products, cats, reload, say }) {
       if (!r.ok) throw new Error(j.error || 'HTTP ' + r.status);
       const have = new Set(products.map((p) => p.source_url));
       setErrs(j.errors || []);
-      setItems((j.items || []).map((i) => ({ ...i, costIn: i.cost ?? '', dup: have.has(i.url), sel: i.cost != null && !have.has(i.url), cat: cats[0]?.name || '', imgs: (i.images?.length ? i.images : i.image ? [i.image] : []).map((u, k) => ({ u, keep: k < 6 })) })));
+      setItems((j.items || []).map((i) => ({ ...i, costIn: i.cost ?? '', dup: have.has(i.url), sel: i.cost != null && !have.has(i.url), cat: cats[0]?.name || '', imgs: (i.images?.length ? i.images : i.image ? [i.image] : []).map((u, k) => ({ u, keep: k < 12 })) })));
       if (!(j.items || []).length) say('Ничего не найдено. Попробуйте ссылку на конкретный товар.');
     } catch (e) { say('Ошибка: ' + e.message); }
     setBusy(false);
