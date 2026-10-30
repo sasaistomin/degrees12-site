@@ -45,3 +45,6 @@ language sql stable as $$
   where created_at >= now() - make_interval(days => days)
   group by path order by count(*) desc limit 10
 $$;
+
+-- 4) Несколько фото на товар (первое — главное)
+alter table public.products add column if not exists photos text[] not null default '{}';

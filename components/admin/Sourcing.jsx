@@ -26,6 +26,7 @@ export default function Sourcing({ products, cats, reload, say }) {
     const price = Math.round(cost * (1 + (Number(margin) || 0) / 100));
     return { cost, price, profit: price - cost };
   };
+  const kept = (i) => (i.imgs || []).filter((x) => x.keep).map((x) => x.u);
   const patch = (idx, p) => setItems((a) => a.map((x, k) => (k === idx ? { ...x, ...p } : x)));
 
   const search = async () => {
@@ -38,7 +39,7 @@ export default function Sourcing({ products, cats, reload, say }) {
       if (!r.ok) throw new Error(j.error || 'HTTP ' + r.status);
       const have = new Set(products.map((p) => p.source_url));
       setErrs(j.errors || []);
-      setItems((j.items || []).map((i) => ({ ...i, costIn: i.cost ?? '', dup: have.has(i.url), sel: i.cost != null && !have.has(i.url), cat: cats[0]?.name || '' })));
+      setItems((j.items || []).map((i) => ({ ...i, costIn: i.cost ?? '', dup: have.has(i.url), sel: i.cost != null && !have.has(i.url), cat: cats[0]?.name || '', imgs: (i.images?.length ? i.images : i.image ? [i.image] : []).map((u, k) => ({ u, keep: k < 6 })) })));
       if (!(j.items || []).length) say('Ничего не найдено. Попробуйте ссылку на конкретный товар.');
     } catch (e) { say('Ошибка: ' + e.message); }
     setBusy(false);
@@ -47,7 +48,7 @@ export default function Sourcing({ products, cats, reload, say }) {
   const add = async () => {
     const chosen = items.filter((i) => i.sel);
     if (!chosen.length) return say('Отметьте товары галочками');
-    const rows = chosen.map((i) => { const c = calc(i); return { name: i.name, brand: i.brand || null, category: i.cat, sizes: i.sizes || [], price: c.price, cost: c.cost, photo: i.image || null, source_url: i.url, source_store: i.store, hidden: true }; });
+    const rows = chosen.map((i) => { const c = calc(i); return { name: i.name, brand: i.brand || null, category: i.cat, sizes: i.sizes || [], price: c.price, cost: c.cost, photo: kept(i)[0] || null, photos: kept(i), source_url: i.url, source_store: i.store, hidden: true }; });
     const r = await sb.from('products').insert(rows);
     if (r.error) return say('Ошибка: ' + r.error.message);
     say(`Добавлено: ${rows.length}. Они скрыты — проверьте и опубликуйте на вкладке «Товары».`);
@@ -97,10 +98,24 @@ export default function Sourcing({ products, cats, reload, say }) {
             return (
               <div className="adm-cand" key={i.url}>
                 <input type="checkbox" checked={i.sel} onChange={(e) => patch(idx, { sel: e.target.checked })} style={{ marginTop: 6 }} />
-                {i.image ? <img src={i.image} alt="" referrerPolicy="no-referrer" /> : <img alt="" src={imgSrc('/logo.jpg')} />}
+                <img src={kept(i)[0] || imgSrc('/logo.jpg')} alt="" referrerPolicy="no-referrer" />
                 <div className="info">
                   <b>{i.name}</b>{i.dup && <span className="adm-tag">Уже добавлен</span>}<br />
                   <small>{i.brand || '—'} · <a href={i.url} target="_blank" rel="noopener noreferrer">{i.store} ↗</a>{i.sizes?.length ? ' · ' + i.sizes.join(', ') : ''}</small>
+                  {i.imgs.length > 0 && (
+                    <div className="adm-gal">
+                      <div className="adm-galbar"><b>Фото: оставить {kept(i).length} из {i.imgs.length}</b>
+                        <button className="abtn sm ghost" onClick={() => patch(idx, { imgs: i.imgs.map((x) => ({ ...x, keep: true })) })}>Оставить все</button>
+                        <button className="abtn sm ghost" onClick={() => patch(idx, { imgs: i.imgs.map((x) => ({ ...x, keep: false })) })}>Убрать все</button>
+                      </div>
+                      <div className="adm-thumbs">{i.imgs.map((x, k) => (
+                        <button type="button" key={x.u} className={'adm-th' + (x.keep ? ' on' : '')} title={x.keep ? 'Нажмите, чтобы убрать' : 'Нажмите, чтобы оставить'}
+                          onClick={() => patch(idx, { imgs: i.imgs.map((y, n) => (n === k ? { ...y, keep: !y.keep } : y)) })}>
+                          <img src={x.u} alt="" referrerPolicy="no-referrer" loading="lazy" /><i>{x.keep ? '✓' : '✕'}</i>{kept(i)[0] === x.u && <em>главное</em>}
+                        </button>
+                      ))}</div>
+                    </div>
+                  )}
                   <div className="nums">
                     <span>Цена магазина: <input style={{ width: 90 }} type="number" min="0" value={i.costIn} onChange={(e) => patch(idx, { costIn: e.target.value })} /></span>
                     <span>Себестоимость: <b>{fmt(c.cost)}</b></span>

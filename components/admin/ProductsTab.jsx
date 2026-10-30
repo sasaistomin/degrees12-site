@@ -1,16 +1,17 @@
 'use client';
 // Вкладка 3: товары — добавить, изменить, «Продано», скрыть, удалить, загрузить фото, категории
 import { useState } from 'react';
-import { sb, fmt, imgSrc, refreshSite } from './adminLib';
+import { sb, fmt, imgSrc, photoList, refreshSite } from './adminLib';
 
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '38', '39', '40', '41', '42', '43', '44', '45', '46'];
-const EMPTY = { id: null, name: '', brand: '', category: '', price: '', cost: '', sizes: [], extra: '', photo: '', description: '', source_url: '', source_store: '', hidden: false };
+const EMPTY = { id: null, name: '', brand: '', category: '', price: '', cost: '', sizes: [], extra: '', photos: [], description: '', source_url: '', source_store: '', hidden: false };
 
 export default function ProductsTab({ products, cats, reload, say }) {
   const [f, setF] = useState(null);          // форма (null = закрыта)
   const [q, setQ] = useState('');
   const [flt, setFlt] = useState('all');
   const [busy, setBusy] = useState(false);
+  const [purl, setPurl] = useState('');
   const [cn, setCn] = useState(''); const [c1, setC1] = useState('#4a3223'); const [c2, setC2] = useState('#f6efe3');
 
   // После любого изменения: перезагрузить данные и обновить публичный сайт
@@ -18,7 +19,7 @@ export default function ProductsTab({ products, cats, reload, say }) {
   const set = (k, v) => setF((x) => ({ ...x, [k]: v }));
 
   const open = (p) => setF(p ? {
-    ...EMPTY, ...p, price: p.price ?? '', cost: p.cost ?? '', brand: p.brand || '', photo: p.photo || '', description: p.description || '',
+    ...EMPTY, ...p, price: p.price ?? '', cost: p.cost ?? '', brand: p.brand || '', photos: photoList(p), description: p.description || '',
     source_url: p.source_url || '', source_store: p.source_store || '',
     sizes: (p.sizes || []).filter((s) => SIZES.includes(s)), extra: (p.sizes || []).filter((s) => !SIZES.includes(s)).join(', '),
   } : { ...EMPTY, category: cats[0]?.name || '' });
@@ -38,7 +39,7 @@ export default function ProductsTab({ products, cats, reload, say }) {
       const name = Date.now() + '-' + Math.random().toString(36).slice(2, 7) + (png ? '.png' : '.jpg');
       const up = await sb.storage.from('photos').upload(name, blob, { contentType: blob.type });
       if (up.error) throw up.error;
-      set('photo', sb.storage.from('photos').getPublicUrl(name).data.publicUrl);
+      setF((x) => ({ ...x, photos: [...x.photos, sb.storage.from('photos').getPublicUrl(name).data.publicUrl] }));
       say('Фото загружено');
     } catch (e) { say('Ошибка фото: ' + e.message); }
     setBusy(false);
@@ -49,7 +50,7 @@ export default function ProductsTab({ products, cats, reload, say }) {
     const sizes = [...f.sizes, ...f.extra.split(',').map((s) => s.trim()).filter(Boolean)];
     const row = {
       name: f.name.trim(), brand: f.brand.trim() || null, category: f.category, price: Number(f.price) || 0,
-      cost: f.cost === '' ? null : Number(f.cost), sizes, photo: f.photo || null, description: f.description.trim() || null,
+      cost: f.cost === '' ? null : Number(f.cost), sizes, photo: f.photos[0] || null, photos: f.photos, description: f.description.trim() || null,
       source_url: f.source_url || null, source_store: f.source_store || null, hidden: !!f.hidden,
     };
     const r = f.id ? await sb.from('products').update(row).eq('id', f.id) : await sb.from('products').insert(row);
@@ -92,10 +93,19 @@ export default function ProductsTab({ products, cats, reload, say }) {
               <input style={{ marginTop: 8 }} placeholder="Другие размеры через запятую, например: One size" value={f.extra} onChange={(e) => set('extra', e.target.value)} />
             </div>
             <div className="full"><label>Описание (для Google и покупателей)</label><textarea value={f.description} onChange={(e) => set('description', e.target.value)} /></div>
-            <div className="full"><label>Фото (лучше PNG без фона)</label>
-              <input type="file" accept="image/*" onChange={(e) => upload(e.target.files[0])} />
-              <input style={{ marginTop: 8 }} placeholder="…или вставьте ссылку на фото" value={f.photo} onChange={(e) => set('photo', e.target.value)} />
-              {f.photo && <img src={imgSrc(f.photo)} alt="" style={{ maxWidth: 150, marginTop: 8, borderRadius: 12 }} />}
+            <div className="full"><label>Фото: первое — главное. Нажмите ✕, чтобы убрать лишнее, ★ — сделать главным</label>
+              <div className="adm-thumbs">{f.photos.map((u, k) => (
+                <div className="adm-th on" key={u + k}>
+                  <img src={imgSrc(u)} alt="" referrerPolicy="no-referrer" />
+                  <button type="button" className="x" aria-label="Убрать" onClick={() => set('photos', f.photos.filter((_, n) => n !== k))}>✕</button>
+                  {k === 0 ? <em>главное</em> : <button type="button" className="mk" aria-label="Сделать главным" onClick={() => set('photos', [u, ...f.photos.filter((_, n) => n !== k)])}>★</button>}
+                </div>
+              ))}</div>
+              <input type="file" accept="image/*" multiple onChange={(e) => [...e.target.files].forEach((file) => upload(file))} />
+              <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                <input placeholder="…или вставьте ссылку на фото" value={purl} onChange={(e) => setPurl(e.target.value)} />
+                <button type="button" className="abtn sm" onClick={() => { if (purl.trim()) { set('photos', [...f.photos, purl.trim()]); setPurl(''); } }}>Добавить</button>
+              </div>
             </div>
             <div className="full"><label><input type="checkbox" checked={f.hidden} onChange={(e) => set('hidden', e.target.checked)} /> Скрыть с сайта (черновик)</label></div>
           </div>

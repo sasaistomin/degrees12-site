@@ -4,6 +4,8 @@ import { browserClient } from '@/lib/supabase';
 export const sb = browserClient();
 // Логин «Istomin Sasha M» -> istomin.sasha.m@degrees12.shop (внутренний адрес для Supabase)
 export const toEmail = (login) => login.trim().toLowerCase().replace(/\s+/g, '.') + '@degrees12.shop';
+// Список фото товара: новое поле photos, а у старых товаров — одно фото из photo
+export const photoList = (p) => (p.photos?.length ? p.photos : p.photo ? [p.photo] : []);
 export const fmt = (n) => Math.round(Number(n) || 0).toLocaleString('ru-RU');
 export const imgSrc = (u) => (!u ? '' : /^(https?:)?\/\//.test(u) || u.startsWith('/') ? u : '/' + u);
 export const token = async () => (await sb.auth.getSession()).data.session?.access_token || '';

@@ -9,7 +9,7 @@ export default function ProductCard({ p, locale, d, cats = [] }) {
     <Link href={`/${locale}/product/${productSlug(p)}`} className={'pc' + (p.sold ? ' sold' : '')}>
       <div className="pc-img">
         {p.photo
-          ? <img src={imgSrc(p.photo)} alt={p.name} loading="lazy" />
+          ? <img src={imgSrc(p.photo)} alt={p.name} loading="lazy" referrerPolicy="no-referrer" />
           : <span className="pc-fb" style={{ background: cat?.color || '#4a3223', color: cat?.text_color || '#f6efe3' }}>{p.name}</span>}
         {p.sold && <span className="badge">{d.soldOut}</span>}
       </div>

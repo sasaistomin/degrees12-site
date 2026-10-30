@@ -7,7 +7,8 @@ import { getDict, catName } from '@/lib/i18n';
 import { getProductBySlug, getProducts, getCategories, categorySlug } from '@/lib/data';
 import { pageMeta } from '@/lib/seo';
 import { SITE_URL, CONTACT } from '@/lib/config';
-import { imgSrc, absUrl, money, productSlug } from '@/lib/utils';
+import Gallery from '@/components/Gallery';
+import { photoList, absUrl, money, productSlug } from '@/lib/utils';
 
 export const revalidate = 60;
 
@@ -36,7 +37,7 @@ export default async function ProductPage({ params }) {
       <JsonLd data={[
         {
           '@context': 'https://schema.org', '@type': 'Product', name: p.name, sku: p.id,
-          image: p.photo ? [absUrl(p.photo)] : [`${SITE_URL}/logo.jpg`],
+          image: photoList(p).length ? photoList(p).map(absUrl) : [`${SITE_URL}/logo.jpg`],
           description: p.description || `${p.name} — ${catName(locale, p.category)}`,
           brand: { '@type': 'Brand', name: p.brand || 'Degrees° 12' }, category: p.category,
           offers: { '@type': 'Offer', url, priceCurrency: 'UAH', price: p.price, itemCondition: 'https://schema.org/UsedCondition',
@@ -53,10 +54,7 @@ export default async function ProductPage({ params }) {
       ]} />
 
       <section className="wrap sec prod">
-        <div className="prod-img">
-          {p.photo ? <img src={imgSrc(p.photo)} alt={p.name} /> : <span className="pc-fb" style={{ background: cat?.color || '#4a3223', color: cat?.text_color || '#f6efe3' }}>{p.name}</span>}
-          {p.sold && <span className="badge">{d.soldOut}</span>}
-        </div>
+        <Gallery photos={photoList(p)} name={p.name} sold={p.sold} soldText={d.soldOut} bg={cat?.color || '#4a3223'} fg={cat?.text_color || '#f6efe3'} />
         <div className="prod-info">
           <nav className="crumbs" aria-label="breadcrumb">
             <Link href={`/${locale}/catalog`}>{d.catalog}</Link> / {cat && <Link href={`/${locale}/category/${categorySlug(cat)}`}>{catName(locale, p.category)}</Link>}
