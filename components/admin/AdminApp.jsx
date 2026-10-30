@@ -4,11 +4,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { sb, toEmail } from './adminLib';
 import Welcome from './Welcome';
+import Orders from './Orders';
 import Analytics from './Analytics';
 import ProductsTab from './ProductsTab';
 import Sourcing from './Sourcing';
 
-const TABS = [['welcome', 'Приветствие'], ['analytics', 'Доходы и посетители'], ['products', 'Товары'], ['sourcing', 'Поиск товаров']];
+const TABS = [['welcome', 'Приветствие'], ['orders', 'Заказы'], ['analytics', 'Доходы и посетители'], ['products', 'Товары'], ['sourcing', 'Поиск товаров']];
 
 export default function AdminApp() {
   const [ready, setReady] = useState(false);
@@ -17,6 +18,7 @@ export default function AdminApp() {
   const [products, setProducts] = useState([]);
   const [cats, setCats] = useState([]);
   const [toast, setToast] = useState('');
+  const [newOrders, setNewOrders] = useState(0);   // число новых заказов (значок на вкладке)
   const [login, setLogin] = useState('');
   const [pass, setPass] = useState('');
 
@@ -30,6 +32,8 @@ export default function AdminApp() {
     ]);
     setCats(c.data || []);
     setProducts(p.data || []);
+    const o = await sb.from('orders').select('id', { count: 'exact', head: true }).eq('status', 'new');
+    setNewOrders(o.count || 0);
   }, []);
 
   useEffect(() => {
@@ -66,18 +70,19 @@ export default function AdminApp() {
     );
   }
 
-  const props = { products, cats, reload: load, say, go };
+  const props = { products, cats, reload: load, say, go, newOrders };
   return (
     <div className="adm">
       <aside className="adm-side">
         <a className="brand" href="/"><img src="/logo.jpg" alt="" width="40" height="40" /><span>DEGREES° 12</span></a>
-        {TABS.map(([id, name]) => <button key={id} className={'tab' + (tab === id ? ' on' : '')} onClick={() => go(id)}>{name}</button>)}
+        {TABS.map(([id, name]) => <button key={id} className={'tab' + (tab === id ? ' on' : '')} onClick={() => go(id)}>{name}{id === 'orders' && newOrders > 0 ? ` (${newOrders})` : ''}</button>)}
         <div className="sp" />
         <a className="tab" href="/" target="_blank" rel="noopener noreferrer">Открыть сайт ↗</a>
         <button className="tab" onClick={() => sb.auth.signOut()}>Выйти</button>
       </aside>
       <main className="adm-main">
         {tab === 'welcome' && <Welcome {...props} />}
+        {tab === 'orders' && <Orders {...props} />}
         {tab === 'analytics' && <Analytics {...props} />}
         {tab === 'products' && <ProductsTab {...props} />}
         {tab === 'sourcing' && <Sourcing {...props} />}

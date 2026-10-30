@@ -2,7 +2,7 @@
 // Вкладка 1: приветствие и быстрая сводка
 import { fmt } from './adminLib';
 
-export default function Welcome({ products, go }) {
+export default function Welcome({ products, go, newOrders = 0 }) {
   const h = new Date().getHours();
   const hello = h < 5 ? 'Доброй ночи' : h < 12 ? 'Доброе утро' : h < 18 ? 'Добрый день' : 'Добрый вечер';
   const sold = products.filter((p) => p.sold);
@@ -15,6 +15,7 @@ export default function Welcome({ products, go }) {
       <p className="adm-sub">{new Date().toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' })}. Вот что происходит в магазине.</p>
       <div className="adm-stats">
         <div className="adm-stat dark"><small>В наличии</small><b>{live.length}</b></div>
+        <div className="adm-stat" style={{ cursor: 'pointer' }} onClick={() => go('orders')}><small>Новые заказы</small><b>{newOrders}</b></div>
         <div className="adm-stat"><small>Продано</small><b>{sold.length}</b></div>
         <div className="adm-stat"><small>Черновики и скрытые</small><b>{hidden.length}</b></div>
         <div className="adm-stat"><small>Стоимость остатков</small><b>{fmt(stock)} грн</b></div>

@@ -1,6 +1,7 @@
 // Шапка сайта: логотип, меню, переключатель языка
 import Link from 'next/link';
 import LangSwitch from './LangSwitch';
+import CartButton from './CartButton';
 import { getDict } from '@/lib/i18n';
 
 export default function Header({ locale }) {
@@ -18,6 +19,7 @@ export default function Header({ locale }) {
           <Link href={`/${locale}/about`}>{d.about}</Link>
         </nav>
         <LangSwitch locale={locale} />
+        <CartButton locale={locale} label={d.cart} />
       </div>
     </header>
   );

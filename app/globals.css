@@ -234,3 +234,34 @@ h1,h2,h3,h4{font-family:var(--fd);line-height:1.12;margin:0}
 /* кнопка ✂ «убрать фон» на фото в админке */
 .adm-th .cut{position:absolute;bottom:4px;right:4px;border:0;border-radius:99px;width:22px;height:22px;font-size:12px;cursor:pointer;color:#fff;background:#1d120b}
 .adm-th .cut:disabled{opacity:.5;cursor:wait}
+
+/* ===== корзина и заказ ===== */
+.cartbtn{position:relative;display:grid;place-items:center;width:40px;height:40px;border-radius:99px;border:1px solid var(--line);background:var(--card)}
+.cartbtn:hover{border-color:var(--ink)}
+.cartbtn b{position:absolute;top:-5px;right:-5px;min-width:19px;height:19px;padding:0 5px;border-radius:99px;background:var(--acc);color:var(--ink);font-size:11px;line-height:19px;text-align:center}
+.atc{margin:22px 0 0}
+.atc-sizes{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.atc-sizes span{color:var(--mut);font-weight:600;margin-right:6px}
+.atc-sizes button{border:1.5px solid var(--ink);border-radius:10px;padding:6px 14px;background:transparent;font:inherit;font-weight:700;cursor:pointer;color:var(--ink)}
+.atc-sizes button.on{background:var(--ink);color:var(--bg)}
+.atc-err{color:#8a2b1c;font-weight:700;margin:8px 0}
+.buy .ask{color:var(--mut);font-size:14px;margin-top:16px}.buy .ask a{text-decoration:underline}
+.cart{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:start}
+.cart-row{display:flex;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
+.cart-row img,.cart-ph{width:76px;height:76px;object-fit:contain;background:var(--bg2);border-radius:14px;flex:none}
+.cart-info{flex:1;display:flex;flex-direction:column;min-width:0}
+.cart-info small{color:var(--mut)}.cart-info em{color:#8a2b1c;font-style:normal;font-weight:700}
+.cart-row.off{opacity:.6}
+.cart-price{font-weight:800;white-space:nowrap}
+.cart-x{border:0;background:transparent;font-size:18px;cursor:pointer;color:var(--mut)}.cart-x:hover{color:var(--ink)}
+.cart-total{display:flex;justify-content:space-between;font-size:20px;padding:18px 0}
+.cart-total b{font-family:var(--fd)}
+.checkout{background:var(--card);border:1px solid var(--line);border-radius:26px;padding:26px;display:flex;flex-direction:column;gap:14px}
+.checkout h2{font-size:22px;margin-bottom:4px}
+.checkout label{display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:14px}
+.checkout input,.checkout select,.checkout textarea{padding:12px 14px;border-radius:14px;border:1px solid #cdbb9b;background:#fff;font:inherit;font-weight:500;color:var(--ink)}
+.checkout textarea{min-height:80px;resize:vertical}
+.checkout .note{color:var(--mut);font-size:14px;margin:0}
+.checkout .btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.cart-done{text-align:center;padding-top:120px;padding-bottom:120px}
+@media (max-width:860px){.cart{grid-template-columns:1fr}}

@@ -6,12 +6,12 @@ import { catName } from '@/lib/i18n';
 export default function ProductCard({ p, locale, d, cats = [] }) {
   const cat = cats.find((c) => c.name === p.category);
   return (
-    <Link href={`/${locale}/product/${productSlug(p)}`} className={'pc' + (p.sold ? ' sold' : '')}>
+    <Link href={`/${locale}/product/${productSlug(p)}`} className={'pc' + (p.sold || p.reserved ? ' sold' : '')}>
       <div className="pc-img">
         {p.photo
           ? <img src={imgSrc(p.photo)} alt={p.name} loading="lazy" referrerPolicy="no-referrer" />
           : <span className="pc-fb" style={{ background: cat?.color || '#4a3223', color: cat?.text_color || '#f6efe3' }}>{p.name}</span>}
-        {p.sold && <span className="badge">{d.soldOut}</span>}
+        {(p.sold || p.reserved) && <span className="badge">{p.sold ? d.soldOut : d.reserved}</span>}
       </div>
       <div className="pc-meta">{p.brand || catName(locale, p.category)}</div>
       <h3>{p.name}</h3>

@@ -8,6 +8,7 @@ import { getProductBySlug, getProducts, getCategories, categorySlug } from '@/li
 import { pageMeta } from '@/lib/seo';
 import { SITE_URL, CONTACT } from '@/lib/config';
 import Gallery from '@/components/Gallery';
+import AddToCart from '@/components/AddToCart';
 import { photoList, absUrl, money, productSlug } from '@/lib/utils';
 
 export const revalidate = 60;
@@ -41,7 +42,7 @@ export default async function ProductPage({ params }) {
           description: p.description || `${p.name} — ${catName(locale, p.category)}`,
           brand: { '@type': 'Brand', name: p.brand || 'Degrees° 12' }, category: p.category,
           offers: { '@type': 'Offer', url, priceCurrency: 'UAH', price: p.price, itemCondition: 'https://schema.org/UsedCondition',
-            availability: p.sold ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock' },
+            availability: p.sold ? 'https://schema.org/SoldOut' : p.reserved ? 'https://schema.org/LimitedAvailability' : 'https://schema.org/InStock' },
         },
         {
           '@context': 'https://schema.org', '@type': 'BreadcrumbList',
@@ -62,22 +63,20 @@ export default async function ProductPage({ params }) {
           {p.brand && <div className="pc-meta">{p.brand}</div>}
           <h1>{p.name}</h1>
           <div className="prod-price">{money(p.price, locale)}</div>
-          <div className="prod-sizes"><span>{d.size}</span>{(p.sizes || []).map((s) => <b key={s}>{s}</b>)}</div>
+          {(p.sold || p.reserved) && <div className="prod-sizes"><span>{d.size}</span>{(p.sizes || []).map((s) => <b key={s}>{s}</b>)}</div>}
           {p.description && <p className="prod-desc">{p.description}</p>}
           <dl className="prod-dl">
             <dt>{d.category}</dt><dd>{catName(locale, p.category)}</dd>
             {p.brand && <><dt>{d.brand}</dt><dd>{p.brand}</dd></>}
-            <dt>{d.details}</dt><dd>{p.sold ? d.soldOut : d.inStock}</dd>
+            <dt>{d.details}</dt><dd>{p.sold ? d.soldOut : p.reserved ? d.reserved : d.inStock}</dd>
           </dl>
-          {!p.sold && (
-            <div className="order">
-              <h3>{d.orderTitle}</h3><p>{d.orderText}</p>
-              <div className="hero-btns">
-                <a className="btn" href={CONTACT.telegram} target="_blank" rel="noopener noreferrer">{d.orderTg} →</a>
-                <a className="btn ghost" href={CONTACT.instagram} target="_blank" rel="noopener noreferrer">{d.orderIg}</a>
-              </div>
+          {!p.sold && !p.reserved && (
+            <div className="buy">
+              <AddToCart id={p.id} sizes={p.sizes || []} locale={locale} d={d} />
+              <p className="ask">{d.orderText} <a href={CONTACT.telegram} target="_blank" rel="noopener noreferrer">{d.orderTg}</a> · <a href={CONTACT.instagram} target="_blank" rel="noopener noreferrer">{d.orderIg}</a></p>
             </div>
           )}
+          {p.reserved && !p.sold && <div className="order"><h3>{d.reserved}</h3><p>{d.reservedText}</p></div>}
         </div>
       </section>
 
