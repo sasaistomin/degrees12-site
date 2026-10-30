@@ -3,7 +3,7 @@
 // Вставляете ссылки на товар / коллекцию / сайт магазина -> сервер достаёт название, бренд, цену и фото ->
 // цена продажи = цена магазина × курс + наценка (по умолчанию 10%) -> выбранное добавляется СКРЫТЫМИ черновиками.
 import { useState } from 'react';
-import { sb, fmt, imgSrc, token } from './adminLib';
+import { sb, fmt, imgSrc, token, cutout } from './adminLib';
 
 export default function Sourcing({ products, cats, reload, say }) {
   const [text, setText] = useState('');
@@ -12,6 +12,8 @@ export default function Sourcing({ products, cats, reload, say }) {
   const [items, setItems] = useState([]);
   const [errs, setErrs] = useState([]);
   const [busy, setBusy] = useState(false);
+  const [bgMode, setBgMode] = useState('all'); // убирать фон: у всех оставленных фото / только у главного / не убирать
+  const [prog, setProg] = useState('');
 
   // ---- статистика сверху: считаем по товарам, у которых есть ссылка на магазин ----
   const imported = products.filter((p) => p.source_url);
@@ -48,10 +50,26 @@ export default function Sourcing({ products, cats, reload, say }) {
   const add = async () => {
     const chosen = items.filter((i) => i.sel);
     if (!chosen.length) return say('Отметьте товары галочками');
-    const rows = chosen.map((i) => { const c = calc(i); return { name: i.name, brand: i.brand || null, category: i.cat, sizes: i.sizes || [], price: c.price, cost: c.cost, photo: kept(i)[0] || null, photos: kept(i), source_url: i.url, source_store: i.store, hidden: true }; });
+    setBusy(true);
+    const rows = [];
+    let done = 0, fails = 0;
+    const total = chosen.reduce((s, i) => s + (bgMode === 'none' ? 0 : bgMode === 'main' ? Math.min(1, kept(i).length) : kept(i).length), 0);
+    for (const i of chosen) {
+      const photos = kept(i);
+      // Убираем фон и сохраняем копию у себя; если не вышло, остаётся ссылка на магазин
+      const n = bgMode === 'none' ? 0 : bgMode === 'main' ? Math.min(1, photos.length) : photos.length;
+      for (let k = 0; k < n; k++) {
+        setProg(`Убираю фон: ${++done} из ${total}…`);
+        try { photos[k] = await cutout(photos[k]); } catch (e) { fails++; }
+      }
+      const c = calc(i);
+      rows.push({ name: i.name, brand: i.brand || null, category: i.cat, sizes: i.sizes || [], price: c.price, cost: c.cost, photo: photos[0] || null, photos, source_url: i.url, source_store: i.store, hidden: true });
+    }
+    setProg('');
     const r = await sb.from('products').insert(rows);
+    setBusy(false);
     if (r.error) return say('Ошибка: ' + r.error.message);
-    say(`Добавлено: ${rows.length}. Они скрыты — проверьте и опубликуйте на вкладке «Товары».`);
+    say(`Добавлено: ${rows.length}. Они скрыты — проверьте и опубликуйте на вкладке «Товары».` + (fails ? ` Фон не удалось убрать у ${fails} фото (остались как были).` : ''));
     setItems((a) => a.filter((i) => !i.sel));
     reload();
   };
@@ -127,7 +145,17 @@ export default function Sourcing({ products, cats, reload, say }) {
               </div>
             );
           })}
-          <p><button className="abtn acc" onClick={add}>Добавить выбранные в черновики ({items.filter((i) => i.sel).length}) · прибыль {fmt(selProfit)} грн</button></p>
+          <div className="adm-warn" style={{ background: '#eef6ea', borderColor: '#9fc79a' }}>
+            <label style={{ marginTop: 0 }}>Убрать фон у фото (результат сохранится у вас в хранилище как PNG)</label>
+            <select value={bgMode} onChange={(e) => setBgMode(e.target.value)}>
+              <option value="all">У всех оставленных фото</option>
+              <option value="main">Только у главного фото (быстрее)</option>
+              <option value="none">Не убирать (останутся ссылки на магазин)</option>
+            </select>
+            <small>Обработка идёт у вас в браузере. В первый раз скачивается нейросеть (~40 МБ), это может занять минуту; одно фото потом обрабатывается несколько секунд.</small>
+            {prog && <p style={{ margin: '8px 0 0' }}><b>{prog}</b></p>}
+          </div>
+          <p><button className="abtn acc" disabled={busy} onClick={add}>Добавить выбранные в черновики ({items.filter((i) => i.sel).length}) · прибыль {fmt(selProfit)} грн</button></p>
         </div>
       )}
 

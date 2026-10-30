@@ -1,7 +1,7 @@
 'use client';
 // Вкладка 3: товары — добавить, изменить, «Продано», скрыть, удалить, загрузить фото, категории
 import { useState } from 'react';
-import { sb, fmt, imgSrc, photoList, refreshSite } from './adminLib';
+import { sb, fmt, imgSrc, photoList, refreshSite, resize, removeBg, uploadBlob, cutout } from './adminLib';
 
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '38', '39', '40', '41', '42', '43', '44', '45', '46'];
 const EMPTY = { id: null, name: '', brand: '', category: '', price: '', cost: '', sizes: [], extra: '', photos: [], description: '', source_url: '', source_store: '', hidden: false };
@@ -12,6 +12,8 @@ export default function ProductsTab({ products, cats, reload, say }) {
   const [flt, setFlt] = useState('all');
   const [busy, setBusy] = useState(false);
   const [purl, setPurl] = useState('');
+  const [autoBg, setAutoBg] = useState(true);   // убирать фон у новых загруженных фото
+  const [cutting, setCutting] = useState(-1);     // номер фото, у которого сейчас убирается фон
   const [cn, setCn] = useState(''); const [c1, setC1] = useState('#4a3223'); const [c2, setC2] = useState('#f6efe3');
 
   // После любого изменения: перезагрузить данные и обновить публичный сайт
@@ -25,24 +27,29 @@ export default function ProductsTab({ products, cats, reload, say }) {
   } : { ...EMPTY, category: cats[0]?.name || '' });
 
   // Загрузка фото: уменьшаем до 1200 px и кладём в хранилище Supabase (PNG остаётся PNG — прозрачный фон сохраняется)
+  // Загрузка фото: уменьшаем до 1200 px, при желании убираем фон (получится PNG), кладём в хранилище Supabase
   const upload = async (file) => {
     if (!file) return;
     setBusy(true);
     try {
-      const img = await createImageBitmap(file);
-      const k = Math.min(1, 1200 / Math.max(img.width, img.height));
-      const cv = document.createElement('canvas');
-      cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k);
-      cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
-      const png = file.type === 'image/png';
-      const blob = await new Promise((r) => cv.toBlob(r, png ? 'image/png' : 'image/jpeg', 0.88));
-      const name = Date.now() + '-' + Math.random().toString(36).slice(2, 7) + (png ? '.png' : '.jpg');
-      const up = await sb.storage.from('photos').upload(name, blob, { contentType: blob.type });
-      if (up.error) throw up.error;
-      setF((x) => ({ ...x, photos: [...x.photos, sb.storage.from('photos').getPublicUrl(name).data.publicUrl] }));
-      say('Фото загружено');
-    } catch (e) { say('Ошибка фото: ' + e.message); }
+      let blob;
+      if (autoBg) { say('Убираю фон… (в первый раз дольше: скачивается нейросеть)'); blob = await removeBg(await resize(file, 1200, true)); }
+      else blob = await resize(file);
+      const url = await uploadBlob(blob);
+      setF((x) => ({ ...x, photos: [...x.photos, url] }));
+      say(autoBg ? 'Фото загружено, фон убран' : 'Фото загружено');
+    } catch (e) { say('Ошибка фото: ' + (e.message || e)); }
     setBusy(false);
+  };
+  // Кнопка ✂ у фото: убрать фон и сохранить копию у себя (работает и с фото из чужих магазинов)
+  const cut = async (k) => {
+    setCutting(k);
+    try {
+      const url = await cutout(f.photos[k]);
+      setF((x) => ({ ...x, photos: x.photos.map((u, i) => (i === k ? url : u)) }));
+      say('Фон убран');
+    } catch (e) { say('Не удалось убрать фон: ' + (e.message || e)); }
+    setCutting(-1);
   };
 
   const save = async () => {
@@ -98,9 +105,11 @@ export default function ProductsTab({ products, cats, reload, say }) {
                 <div className="adm-th on" key={u + k}>
                   <img src={imgSrc(u)} alt="" referrerPolicy="no-referrer" />
                   <button type="button" className="x" aria-label="Убрать" onClick={() => set('photos', f.photos.filter((_, n) => n !== k))}>✕</button>
+                  <button type="button" className="cut" aria-label="Убрать фон" title="Убрать фон" disabled={cutting >= 0 || busy} onClick={() => cut(k)}>{cutting === k ? '…' : '✂'}</button>
                   {k === 0 ? <em>главное</em> : <button type="button" className="mk" aria-label="Сделать главным" onClick={() => set('photos', [u, ...f.photos.filter((_, n) => n !== k)])}>★</button>}
                 </div>
               ))}</div>
+              <label style={{ fontWeight: 600 }}><input type="checkbox" checked={autoBg} onChange={(e) => setAutoBg(e.target.checked)} /> Убирать фон у новых фото автоматически</label>
               <input type="file" accept="image/*" multiple onChange={(e) => [...e.target.files].forEach((file) => upload(file))} />
               <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
                 <input placeholder="…или вставьте ссылку на фото" value={purl} onChange={(e) => setPurl(e.target.value)} />
